@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://karigar-gravity98.vercel.app/sitemap.xml
+Sitemap: https://karigar-workshop.vercel.app/sitemap.xml

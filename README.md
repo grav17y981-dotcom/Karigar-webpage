@@ -76,7 +76,7 @@ A future implementation should use an environment-configured endpoint or trusted
 - All workshop, inventory, appointment, activity, and supplier information is sample data.
 - The illustrated workshop is a focused product story, not a digital twin or operational repair-order system.
 - The waitlist/demo success state is local to the page.
-- Canonical, sitemap, robots, and social URLs use the current production domain, `https://karigar-gravity98.vercel.app/`.
+- Canonical, sitemap, robots, and social URLs use the current production domain, `https://karigar-workshop.vercel.app/`.
 - Karigar does not guarantee part compatibility, fitment, availability, or quantity accuracy. Human verification is required.
 
 ## Future application boundary
