@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://karigar-webpage.vercel.app/sitemap.xml
