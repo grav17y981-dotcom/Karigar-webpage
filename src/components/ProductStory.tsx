@@ -10,20 +10,10 @@ const workflow = [
 
 export function ProblemAndWorkflow() {
   return (
-    <section className="story-section" id="how-it-works" aria-labelledby="problem-title">
-      <div className="section-shell story-diptych" data-scroll-flow>
-        <img src="/assets/karigar-parts-editorial.png" alt="Organized parts shelves beside a clean service bay and mechanic workbench" />
-        <div className="story-copy">
-          <h2 id="problem-title">Parts shouldn&rsquo;t be the reason a bay goes quiet.</h2>
-          <p>Missing parts, searching shelves, and last-minute calls create delays that ripple across the day.</p>
-          <p>Karigar keeps parts, locations, and appointments connected so the team finds what it needs and the schedule stays on track.</p>
-          <a className="button button--ink" href="#workshop">See how Karigar works <Icon name="arrow" /></a>
-        </div>
-      </div>
-
+    <section className="story-section" id="how-it-works" aria-labelledby="workflow-title">
       <div className="section-shell workflow-section">
         <div className="workflow-heading" data-scroll-flow>
-          <h2>From appointment to shelf to restock.</h2>
+          <h2 id="workflow-title">From appointment to shelf to restock.</h2>
           <p>Karigar connects the work on the floor with the inventory behind it.</p>
         </div>
         <ol className="workflow-rail">

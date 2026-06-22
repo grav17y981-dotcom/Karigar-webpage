@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { BrandMark } from './components/BrandMark'
 import { FeatureStory, ProblemAndWorkflow } from './components/ProductStory'
-import { WorkshopExperience } from './components/WorkshopExperience'
 import { LeadForm, type FormMode } from './components/LeadForm'
 import { Icon } from './components/Icons'
 import { useScrollFlow } from './hooks/useScrollFlow'
@@ -23,13 +22,13 @@ function Header({ onDemo }: { onDemo: () => void }) {
   return (
     <header className="site-header">
       <a className="header-brand" href="#top" aria-label="Karigar home" onClick={close}>
-        <BrandMark compact light={false} />
+        <BrandMark compact />
       </a>
       <button className="menu-button" type="button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
         <Icon name={open ? 'close' : 'menu'} />
       </button>
       <nav className={open ? 'is-open' : ''} aria-label="Main navigation">
-        <a href="#workshop" onClick={close}>Workshop</a>
+        <a href="#features" onClick={close}>Features</a>
         <a href="#how-it-works" onClick={close}>How it works</a>
         <a href="#for-shops" onClick={close}>For shops</a>
         <a href="#trust" onClick={close}>Trust</a>
@@ -62,7 +61,7 @@ function Hero() {
           </div>
         </div>
         <div className="hero-scroll-cue" aria-hidden="true">
-          <span>Scroll to inspect the workshop</span>
+          <span>Scroll to see how it works</span>
           <i><b /></i>
         </div>
       </div>
@@ -133,8 +132,8 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="section-shell footer-grid">
-        <div><BrandMark compact light={false} /><p>Parts. Planning. Peace of mind.</p></div>
-        <nav aria-label="Footer navigation"><a href="#workshop">Workshop</a><a href="#how-it-works">How it works</a><a href="#for-shops">For shops</a></nav>
+        <div><BrandMark compact /><p>Parts. Planning. Peace of mind.</p></div>
+        <nav aria-label="Footer navigation"><a href="#features">Features</a><a href="#how-it-works">How it works</a><a href="#for-shops">For shops</a></nav>
         <nav aria-label="Company navigation"><a href="#trust">Trust & privacy</a><a href="#contact">Join waitlist</a><a href="#contact">Request demo</a></nav>
         <div className="footer-meta"><p>Early product concept</p><p>&copy; {new Date().getFullYear()} Karigar</p></div>
       </div>
@@ -154,7 +153,6 @@ export default function App() {
       <main id="main">
         <Hero />
         <ProblemAndWorkflow />
-        <WorkshopExperience />
         <FeatureStory />
         <BuiltForShops />
         <TrustSection />

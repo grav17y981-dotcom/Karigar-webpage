@@ -66,14 +66,11 @@ img, svg { display: block; }
 
 /* Wordmark */
 .brand-mark {
-  display: inline-flex; align-items: center; color: #fff; font-family: var(--serif); font-size: clamp(2.3rem, 5vw, 5.4rem);
-  line-height: 1; letter-spacing: -.035em; text-transform: lowercase;
+  width: 220px; height: 72px; position: relative; display: block; overflow: hidden; flex: none;
 }
-.brand-mark--compact { font-size: 1.7rem; }
-.brand-mark--dark { color: var(--ink); }
-.brand-screwdriver { width: .48em; height: 1.16em; margin: -.12em .015em 0; display: inline-flex; flex-direction: column; align-items: center; }
-.brand-screwdriver__handle { width: .35em; height: .45em; border-radius: .15em .15em .09em .09em; background: linear-gradient(90deg,#9c3516,#ed7138 34%,#a53c19 64%,#f18448); }
-.brand-screwdriver__shaft { width: .09em; height: .58em; background: linear-gradient(90deg,#666,#dedede 50%,#666); clip-path: polygon(15% 0,85% 0,80% 82%,50% 100%,20% 82%); }
+.brand-mark img { width: 283px; max-width: none; position: absolute; left: -33px; top: -61px; mix-blend-mode: multiply; }
+.brand-mark--compact { width: 118px; height: 40px; }
+.brand-mark--compact img { width: 152px; left: -17px; top: -33px; }
 
 /* Header */
 .site-header {
@@ -167,8 +164,8 @@ img, svg { display: block; }
   width: 100%; height: 100%; display: block; background: var(--copper);
   transform: scaleX(var(--hero-progress, 0)); transform-origin: left;
 }
-/* Editorial story */
-.story-section { padding: 110px 0 100px; }
+/* Workflow story */
+.story-section { padding: 120px 0; }
 .story-diptych { display: grid; grid-template-columns: .95fr 1.05fr; gap: 22px; align-items: stretch; }
 .story-diptych > img, .story-copy { min-height: 610px; border-radius: 18px; }
 .story-diptych > img { width: 100%; height: 100%; object-fit: cover; }
@@ -178,7 +175,7 @@ img, svg { display: block; }
 .story-copy p { margin: 0 0 15px; color: #777875; font-size: .95rem; line-height: 1.65; }
 .story-copy .button { margin-top: 22px; }
 
-.workflow-section { padding: 170px 0 70px; }
+.workflow-section { padding: 0; }
 .workflow-heading { max-width: 760px; margin: 0 auto 80px; text-align: center; }
 .workflow-heading h2, .workshop-heading h2, .roles-section h2 { margin: 0 0 18px; font-family: var(--serif); font-size: clamp(3.3rem,5vw,5.8rem); font-weight: 400; line-height: 1; letter-spacing: -.052em; }
 .workflow-heading p, .workshop-heading p { margin: 0; color: #888986; line-height: 1.55; }
@@ -376,7 +373,6 @@ img, svg { display: block; }
   .story-diptych { grid-template-columns: 1fr; }
   .story-diptych > img { min-height: 480px; }
   .story-copy { min-height: 460px; }
-  .workflow-section { padding-top: 110px; }
   .workshop-sticky { height: calc(100vh - 70px); top: 70px; padding: 14px 0 18px; }
   .workshop-heading { margin-bottom: 12px; }
   .workshop-heading h2 { font-size: 2.45rem; }
@@ -404,7 +400,8 @@ img, svg { display: block; }
 
 @media (max-width: 620px) {
   :root { --shell: calc(100% - 30px); }
-  .brand-mark--compact { font-size: 1.45rem; }
+  .brand-mark--compact { width: 108px; height: 37px; }
+  .brand-mark--compact img { width: 139px; left: -16px; top: -30px; }
   .hero-scroll-scene { height: 190vh; }
   .hero { width: calc(100% - 30px); min-height: 0; padding: 100px 0 28px; align-content: start; }
   .hero h1 { font-size: clamp(3.7rem,17vw,5.1rem); }
