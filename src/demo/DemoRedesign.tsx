@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type RefObject } from 'react'
 import './demo-redesign.css'
 import { BrandMark } from '../components/BrandMark'
 import { Icon } from '../components/Icons'
@@ -60,6 +60,64 @@ const phases = [
   { when: 'Later', title: 'Production integrations', text: 'Connect Karigar with the systems and suppliers shops already rely on.' },
 ]
 
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const getHeaderOffset = () => document.querySelector<HTMLElement>('.demo-header')?.getBoundingClientRect().height ?? 0
+
+const getAnchorTarget = (hash: string) => {
+  if (!hash.startsWith('#')) return null
+  const id = decodeURIComponent(hash.slice(1))
+  return id ? document.getElementById(id) : null
+}
+
+const scrollToAnchorTarget = (hash: string) => {
+  const target = getAnchorTarget(hash)
+  if (!target) return null
+
+  const top = hash === '#top'
+    ? 0
+    : Math.max(0, target.getBoundingClientRect().top + window.scrollY - getHeaderOffset())
+
+  window.scrollTo({
+    top,
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+  })
+
+  return target
+}
+
+function handleAnchorClick(
+  event: MouseEvent<HTMLAnchorElement>,
+  onNavigate?: () => void,
+  focusTarget = false,
+) {
+  const { currentTarget } = event
+  const url = new URL(currentTarget.href)
+
+  if (
+    !url.hash
+    || url.origin !== window.location.origin
+    || url.pathname !== window.location.pathname
+  ) {
+    onNavigate?.()
+    return
+  }
+
+  const target = scrollToAnchorTarget(url.hash)
+  if (!target) {
+    onNavigate?.()
+    return
+  }
+
+  event.preventDefault()
+  window.history.pushState(null, '', url.hash)
+  onNavigate?.()
+
+  if (focusTarget) {
+    window.setTimeout(() => target.focus({ preventScroll: true }), prefersReducedMotion() ? 0 : 260)
+  }
+}
+
 function DemoSeo() {
   useEffect(() => {
     document.documentElement.classList.add('demo-redesign-document')
@@ -76,11 +134,12 @@ function DemoSeo() {
     }
 
     const description = 'Karigar helps auto repair shops plan appointments, track required parts, manage inventory, and prepare repair jobs before vehicles arrive.'
+    const productionOrigin = 'https://karigar-workshop.vercel.app'
     const isDemoRoute = window.location.pathname.replace(/\/$/, '') === '/demo-redesign'
     const canonicalUrl = isDemoRoute
-      ? 'https://karigar-workshop.vercel.app/demo-redesign'
-      : 'https://karigar-workshop.vercel.app/'
-    const socialImage = new URL('/assets/karigar-workbench-hero.png', window.location.origin).href
+      ? `${productionOrigin}/demo-redesign`
+      : `${productionOrigin}/`
+    const socialImage = `${productionOrigin}/assets/karigar-workbench-hero.png`
 
     setMeta('meta[name="description"]', { name: 'description', content: description })
     setMeta('meta[name="robots"]', { name: 'robots', content: isDemoRoute ? 'noindex, nofollow' : 'index, follow' })
@@ -89,10 +148,12 @@ function DemoSeo() {
     setMeta('meta[property="og:description"]', { property: 'og:description', content: description })
     setMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl })
     setMeta('meta[property="og:image"]', { property: 'og:image', content: socialImage })
+    setMeta('meta[property="og:image:alt"]', { property: 'og:image:alt', content: 'Karigar automotive workbench with organized tools' })
     setMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' })
     setMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: 'Karigar | Parts-ready repair planning' })
     setMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description })
     setMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: socialImage })
+    setMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt', content: 'Karigar automotive workbench with organized tools' })
 
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
     if (!canonical) {
@@ -102,8 +163,9 @@ function DemoSeo() {
     }
     canonical.href = canonicalUrl
 
-    const structuredData = document.createElement('script')
-    structuredData.id = 'karigar-demo-structured-data'
+    const structuredData = document.getElementById('karigar-structured-data') as HTMLScriptElement | null
+      ?? document.createElement('script')
+    structuredData.id = 'karigar-structured-data'
     structuredData.type = 'application/ld+json'
     structuredData.text = JSON.stringify({
       '@context': 'https://schema.org',
@@ -115,13 +177,11 @@ function DemoSeo() {
       description,
       audience: { '@type': 'BusinessAudience', audienceType: 'Independent auto repair shops and body shops' },
     })
-    document.getElementById(structuredData.id)?.remove()
-    document.head.appendChild(structuredData)
+    if (!structuredData.parentElement) document.head.appendChild(structuredData)
 
     return () => {
       document.documentElement.classList.remove('demo-redesign-document')
       document.body.classList.remove('demo-redesign-document')
-      structuredData.remove()
     }
   }, [])
 
@@ -132,18 +192,116 @@ function Wordmark() {
   return <BrandMark inverted className="demo-wordmark" />
 }
 
+function useScrollGearMotion(gearsRef: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const gears = gearsRef.current
+    if (!gears) return undefined
+
+    const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let frame = 0
+    let lastScrollY = window.scrollY
+    let targetRotation = window.scrollY * 0.2
+    let renderedRotation = targetRotation
+
+    const writeRotation = (rotation: number) => {
+      gears.style.setProperty('--demo-gear-large-rotation', `${rotation.toFixed(2)}deg`)
+      gears.style.setProperty('--demo-gear-small-rotation', `${(rotation * 1.14).toFixed(2)}deg`)
+    }
+
+    const tick = () => {
+      frame = 0
+      if (reducedMotionMedia.matches) {
+        renderedRotation = 0
+        targetRotation = 0
+        writeRotation(0)
+        return
+      }
+
+      renderedRotation += (targetRotation - renderedRotation) * 0.24
+      if (Math.abs(targetRotation - renderedRotation) < 0.05) renderedRotation = targetRotation
+      writeRotation(renderedRotation)
+      if (renderedRotation !== targetRotation) scheduleFrame()
+    }
+
+    const scheduleFrame = () => {
+      if (!frame) frame = window.requestAnimationFrame(tick)
+    }
+
+    const onScroll = () => {
+      const nextScrollY = window.scrollY
+      const delta = nextScrollY - lastScrollY
+      lastScrollY = nextScrollY
+      if (Math.abs(delta) < 0.1) return
+
+      const clampedDelta = Math.max(-90, Math.min(90, delta))
+      targetRotation += clampedDelta * 0.48
+      scheduleFrame()
+    }
+
+    const onMotionChange = () => {
+      lastScrollY = window.scrollY
+      if (reducedMotionMedia.matches) {
+        targetRotation = 0
+        renderedRotation = 0
+        writeRotation(0)
+        return
+      }
+      targetRotation = window.scrollY * 0.2
+      renderedRotation = targetRotation
+      writeRotation(renderedRotation)
+    }
+
+    writeRotation(reducedMotionMedia.matches ? 0 : renderedRotation)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    reducedMotionMedia.addEventListener('change', onMotionChange)
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+      reducedMotionMedia.removeEventListener('change', onMotionChange)
+      gears.style.removeProperty('--demo-gear-large-rotation')
+      gears.style.removeProperty('--demo-gear-small-rotation')
+    }
+  }, [gearsRef])
+}
+
+function ScrollGears() {
+  const gearsRef = useRef<HTMLDivElement>(null)
+  useScrollGearMotion(gearsRef)
+
+  return (
+    <div className="demo-header__gears" aria-hidden="true" ref={gearsRef}>
+      <span className="demo-scroll-gear demo-scroll-gear--large" />
+      <span className="demo-scroll-gear demo-scroll-gear--small" />
+    </div>
+  )
+}
+
 function OpeningSequence() {
-  const [visible, setVisible] = useState(true)
+  const [visible, setVisible] = useState(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+    try {
+      return window.sessionStorage.getItem('karigar-opening-seen') !== 'true'
+    } catch {
+      return true
+    }
+  })
   const [leaving, setLeaving] = useState(false)
 
   useEffect(() => {
+    if (!visible) return undefined
+    try {
+      window.sessionStorage.setItem('karigar-opening-seen', 'true')
+    } catch {
+      // Ignore private-mode storage failures; the intro should still complete.
+    }
     const exitTimer = window.setTimeout(() => setLeaving(true), 1900)
     const removeTimer = window.setTimeout(() => setVisible(false), 2700)
     return () => {
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)
     }
-  }, [])
+  }, [visible])
 
   if (!visible) return null
 
@@ -160,6 +318,7 @@ function OpeningSequence() {
 
 function DemoHeader() {
   const [open, setOpen] = useState(false)
+  const closeMenu = () => setOpen(false)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -171,9 +330,12 @@ function DemoHeader() {
 
   return (
     <header className="demo-header">
-      <a className="demo-header__brand" href="#top" aria-label="Karigar redesign demo home" onClick={() => setOpen(false)}>
-        <Wordmark />
-      </a>
+      <div className="demo-header__brand-stack">
+        <a className="demo-header__brand" href="#top" aria-label="Karigar home" onClick={(event) => handleAnchorClick(event, closeMenu)}>
+          <Wordmark />
+        </a>
+        <ScrollGears />
+      </div>
       <button
         className="demo-menu-button"
         type="button"
@@ -184,9 +346,9 @@ function DemoHeader() {
       >
         <Icon name={open ? 'close' : 'menu'} />
       </button>
-      <nav id="demo-navigation" className={open ? 'is-open' : ''} aria-label="Redesign demo navigation">
-        {navItems.map((item) => <a key={item.href} href={item.href} onClick={() => setOpen(false)}>{item.label}</a>)}
-        <a className="demo-header__cta" href="#early-access" onClick={() => setOpen(false)}>Early access <Icon name="arrow" /></a>
+      <nav id="demo-navigation" className={open ? 'is-open' : ''} aria-label="Main navigation">
+        {navItems.map((item) => <a key={item.href} href={item.href} onClick={(event) => handleAnchorClick(event, closeMenu)}>{item.label}</a>)}
+        <a className="demo-header__cta" href="#early-access" onClick={(event) => handleAnchorClick(event, closeMenu)}>Early access <Icon name="arrow" /></a>
       </nav>
     </header>
   )
@@ -209,7 +371,11 @@ function SceneProgress({ activeSceneIndex }: { activeSceneIndex: number }) {
 function useHeroDepth(heroRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const hero = heroRef.current
-    if (!hero || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    if (
+      !hero
+      || !window.matchMedia('(hover: hover) and (pointer: fine)').matches
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return
 
     let frame = 0
     let targetX = 0
@@ -272,6 +438,10 @@ function CinematicHero() {
             <div className="demo-hero__copy">
               <h1 id="demo-hero-title">Never start a repair without the <strong>parts</strong> ready.</h1>
               <p>Karigar connects appointments, inventory, and restocking so every repair can begin with confidence.</p>
+              <div className="demo-hero__actions" aria-label="Primary actions">
+                <a href="#problem" onClick={handleAnchorClick}>See the workflow <Icon name="arrow" /></a>
+                <a href="#early-access" onClick={handleAnchorClick}>Join early access</a>
+              </div>
             </div>
             <div className="demo-hero__index" aria-hidden="true"><span>Appointments</span><span>Inventory</span><span>Restocking</span><span>Ready</span></div>
           </div>
@@ -303,18 +473,33 @@ function ServicesStage({ activeService }: { activeService: number }) {
           </ol>
         </div>
         <div className="demo-services__images" aria-hidden="true">
-          <picture className="demo-services__image demo-services__image--one" data-demo-flow-object data-demo-flow-start="0.02" data-demo-flow-end="0.42" data-demo-flow-travel="850">
-            <source media="(max-width: 820px)" srcSet="/assets/demo-redesign/cinematic-parts-shelf-mobile.webp" />
-            <img src="/assets/demo-redesign/cinematic-parts-shelf.webp" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
-          </picture>
-          <picture className="demo-services__image demo-services__image--two" data-demo-flow-object data-demo-flow-start="0.24" data-demo-flow-end="0.68" data-demo-flow-travel="850">
-            <source media="(max-width: 820px)" srcSet="/assets/demo-redesign/cinematic-planning-wall-mobile.webp" />
-            <img src="/assets/demo-redesign/cinematic-planning-wall.webp" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
-          </picture>
-          <picture className="demo-services__image demo-services__image--three" data-demo-flow-object data-demo-flow-start="0.5" data-demo-flow-end="0.94" data-demo-flow-travel="950">
-            <source media="(max-width: 820px)" srcSet="/assets/demo-redesign/cinematic-parts-cart-mobile.webp" />
-            <img src="/assets/demo-redesign/cinematic-parts-cart.webp" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
-          </picture>
+          <figure className="demo-services__image demo-services__image--one" data-demo-flow-object data-demo-flow-axis="x" data-demo-flow-fade="window" data-demo-flow-start="0.02" data-demo-flow-end="0.3" data-demo-flow-travel="180">
+            <picture>
+              <source media="(max-width: 820px)" srcSet="/assets/demo-redesign/cinematic-planning-wall-mobile.webp" />
+              <img src="/assets/demo-redesign/cinematic-planning-wall.webp" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
+            </picture>
+            <figcaption><span>01</span> Appointment planning</figcaption>
+          </figure>
+          <figure className="demo-services__image demo-services__image--two" data-demo-flow-object data-demo-flow-axis="x" data-demo-flow-fade="window" data-demo-flow-start="0.25" data-demo-flow-end="0.52" data-demo-flow-travel="190">
+            <picture>
+              <source media="(max-width: 820px)" srcSet="/assets/demo-redesign/cinematic-parts-shelf-mobile.webp" />
+              <img src="/assets/demo-redesign/cinematic-parts-shelf.webp" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
+            </picture>
+            <figcaption><span>02</span> Inventory visibility</figcaption>
+          </figure>
+          <figure className="demo-services__image demo-services__image--three" data-demo-flow-object data-demo-flow-axis="x" data-demo-flow-fade="window" data-demo-flow-start="0.48" data-demo-flow-end="0.76" data-demo-flow-travel="200">
+            <picture>
+              <source media="(max-width: 820px)" srcSet="/assets/demo-redesign/cinematic-parts-cart-mobile.webp" />
+              <img src="/assets/demo-redesign/cinematic-parts-cart.webp" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
+            </picture>
+            <figcaption><span>03</span> Restocking</figcaption>
+          </figure>
+          <figure className="demo-services__image demo-services__image--four" data-demo-flow-object data-demo-flow-axis="x" data-demo-flow-fade="window" data-demo-flow-start="0.7" data-demo-flow-end="0.98" data-demo-flow-travel="210">
+            <picture>
+              <img src="/assets/karigar-workbench-hero.png" alt="" width="1672" height="941" loading="lazy" decoding="async" />
+            </picture>
+            <figcaption><span>04</span> Repair readiness</figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -328,7 +513,6 @@ function ConnectedStage() {
     <section className="demo-connected" id="how-it-works" data-demo-scene="how-it-works" aria-labelledby="demo-connected-title">
       <div className="demo-connected__header demo-shell">
         <h2 id="demo-connected-title">From booking to <strong>bay-ready.</strong></h2>
-        <img src="/assets/karigar-parts-editorial.png" alt="Organized brake parts and repair tools in an empty workshop" width="1536" height="1024" loading="lazy" decoding="async" />
       </div>
       <div className="demo-connected__rows">
         {connectedRows.map((row, index) => (
@@ -336,6 +520,7 @@ function ConnectedStage() {
             className={index === activeRow ? 'is-active' : ''}
             key={row}
             type="button"
+            aria-pressed={index === activeRow}
             onMouseEnter={() => setActiveRow(index)}
             onPointerEnter={() => setActiveRow(index)}
             onFocus={() => setActiveRow(index)}
@@ -373,7 +558,9 @@ function RoadmapStage() {
   return (
     <section className="demo-scroll-scene demo-roadmap" id="roadmap" data-demo-scene="roadmap" aria-labelledby="demo-roadmap-title">
       <div className="demo-scene__sticky">
-        <div className="demo-roadmap__texture" />
+        <div className="demo-roadmap__texture" aria-hidden="true">
+          <img src="/assets/karigar-garage-editorial.png" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
+        </div>
         <div className="demo-shell demo-roadmap__layout">
           <h2 id="demo-roadmap-title">Built in the open, <strong>with shops.</strong></h2>
           <p>Karigar is an early product concept. We are validating the workflow with repair teams before building deeper integrations.</p>
@@ -427,6 +614,13 @@ function EarlyAccess() {
     setSubmitted(true)
   }
 
+  const resetForm = () => {
+    setSubmitted(false)
+    setValues(emptyForm)
+    setErrors({})
+    window.setTimeout(() => emailRef.current?.focus(), 0)
+  }
+
   return (
     <section className="demo-early-access" id="early-access" data-demo-scene="early-access" aria-labelledby="demo-early-title">
       <div className="demo-shell demo-early-access__layout">
@@ -440,7 +634,7 @@ function EarlyAccess() {
               <span><Icon name="check" /></span>
               <h3>Thanks &mdash; your interest has been recorded for this demo.</h3>
               <p>This demo did not send or store your information.</p>
-              <button type="button" onClick={() => { setSubmitted(false); setValues(emptyForm) }}>Send another response</button>
+              <button type="button" onClick={resetForm}>Send another response</button>
             </div>
           ) : (
             <form onSubmit={submit} noValidate>
@@ -474,9 +668,9 @@ function DemoFooter() {
     <footer className="demo-footer">
       <div className="demo-shell demo-footer__layout">
         <div><Wordmark /><p>Parts ready before the appointment begins.</p></div>
-        <nav aria-label="Redesign demo footer navigation">
-          {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
-          <a href="#early-access">Join Early Access</a>
+        <nav aria-label="Footer navigation">
+          {navItems.map((item) => <a key={item.href} href={item.href} onClick={handleAnchorClick}>{item.label}</a>)}
+          <a href="#early-access" onClick={handleAnchorClick}>Join Early Access</a>
         </nav>
       </div>
       <div className="demo-shell demo-footer__meta"><span>Early product concept</span><span>&copy; {new Date().getFullYear()} Karigar</span></div>
@@ -495,10 +689,10 @@ export default function DemoRedesign() {
     <div className="redesign-page" ref={rootRef}>
       <DemoSeo />
       <OpeningSequence />
-      <a className="demo-skip-link" href="#demo-main">Skip to main content</a>
+      <a className="demo-skip-link" href="#demo-main" onClick={(event) => handleAnchorClick(event, undefined, true)}>Skip to main content</a>
       <DemoHeader />
       <SceneProgress activeSceneIndex={activeSceneIndex} />
-      <main id="demo-main">
+      <main id="demo-main" tabIndex={-1}>
         <CinematicHero />
         <ServicesStage activeService={activeWorkflowStep} />
         <ConnectedStage />

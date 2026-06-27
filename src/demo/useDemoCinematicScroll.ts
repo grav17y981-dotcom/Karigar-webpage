@@ -32,6 +32,7 @@ type FlowObject = {
   axis: 'x' | 'y'
   element: HTMLElement
   end: number
+  fade: 'in' | 'window'
   lastOpacity: string
   lastProgress: string
   lastX: string
@@ -107,8 +108,18 @@ function writeSceneVariables(
   for (const object of scene.flowObjects) {
     const range = Math.max(object.end - object.start, 0.001)
     const objectProgress = mobile ? 1 : smoothstep(clamp((progress - object.start) / range))
-    const travel = mobile ? 0 : (1 - objectProgress) * object.travel
-    const opacity = objectProgress.toFixed(4)
+    const travel = mobile
+      ? 0
+      : object.axis === 'x'
+        ? (0.5 - objectProgress) * object.travel
+        : (1 - objectProgress) * object.travel
+    const fadeDistance = Math.min(range * 0.35, 0.12)
+    const fadeIn = objectProgress
+    const fadeOut = 1 - smoothstep(clamp((progress - (object.end - fadeDistance)) / Math.max(fadeDistance, 0.001)))
+    const objectOpacity = object.fade === 'window' && !mobile
+      ? Math.min(1, fadeIn * 2.2) * fadeOut
+      : objectProgress
+    const opacity = objectOpacity.toFixed(4)
     const serializedProgress = objectProgress.toFixed(4)
     const x = `${(object.axis === 'x' ? travel : 0).toFixed(2)}px`
     const y = `${(object.axis === 'y' ? travel : 0).toFixed(2)}px`
@@ -140,6 +151,7 @@ function createSceneGeometry(element: HTMLElement): SceneGeometry {
       axis: flowElement.dataset.demoFlowAxis === 'x' ? 'x' as const : 'y' as const,
       element: flowElement,
       end,
+      fade: flowElement.dataset.demoFlowFade === 'window' ? 'window' as const : 'in' as const,
       lastOpacity: '',
       lastProgress: '',
       lastX: '',
@@ -195,9 +207,10 @@ export function useDemoCinematicScroll(
       ? Array.from(workflowScene.element.querySelectorAll<HTMLElement>(WORKFLOW_STEP_SELECTOR))
       : []
     const mobileMedia = window.matchMedia(MOBILE_QUERY)
+    const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)')
     const observedRatios = new Map<Element, number>()
 
-    let mobile = mobileMedia.matches
+    let mobile = mobileMedia.matches || reducedMotionMedia.matches
     let disposed = false
     let frame = 0
     let needsMeasure = true
@@ -205,6 +218,7 @@ export function useDemoCinematicScroll(
     let targetScrollY = window.scrollY
     let renderedScrollY = targetScrollY
     let viewportHeight = Math.max(window.innerHeight, 1)
+    let lastFrameTime = 0
     let lastSceneBoundary = -1
     let lastWorkflowBoundary = -1
     let mobileObserver: IntersectionObserver | null = null
@@ -348,7 +362,7 @@ export function useDemoCinematicScroll(
       if (nextWorkflowStep !== null) commitWorkflowBoundary(nextWorkflowStep)
     }
 
-    const tick = () => {
+    const tick = (timestamp: number) => {
       frame = 0
       if (disposed) return
 
@@ -365,8 +379,14 @@ export function useDemoCinematicScroll(
         return
       }
 
-      renderedScrollY += (targetScrollY - renderedScrollY) * 0.12
-      if (Math.abs(targetScrollY - renderedScrollY) < 0.1) renderedScrollY = targetScrollY
+      const distance = targetScrollY - renderedScrollY
+      const elapsed = lastFrameTime > 0 ? Math.min(timestamp - lastFrameTime, 50) : 16.67
+      const baseEase = Math.abs(distance) > viewportHeight * 0.85 ? 0.34 : 0.18
+      const frameEase = 1 - Math.pow(1 - baseEase, elapsed / 16.67)
+      lastFrameTime = timestamp
+
+      renderedScrollY += distance * frameEase
+      if (Math.abs(targetScrollY - renderedScrollY) < 0.35) renderedScrollY = targetScrollY
       updateDesktop(renderedScrollY)
 
       if (renderedScrollY !== targetScrollY) scheduleFrame()
@@ -412,10 +432,11 @@ export function useDemoCinematicScroll(
       scheduleFrame()
     }
 
-    const onMediaChange = (event: MediaQueryListEvent) => {
-      mobile = event.matches
+    const onMediaChange = () => {
+      mobile = mobileMedia.matches || reducedMotionMedia.matches
       targetScrollY = window.scrollY
       renderedScrollY = targetScrollY
+      lastFrameTime = 0
       needsMeasure = true
       needsMobileSync = mobile
       connectMobileObserver()
@@ -429,6 +450,8 @@ export function useDemoCinematicScroll(
         return
       }
       targetScrollY = window.scrollY
+      renderedScrollY = targetScrollY
+      lastFrameTime = 0
       needsMeasure = true
       needsMobileSync = mobile
       scheduleFrame()
@@ -447,6 +470,7 @@ export function useDemoCinematicScroll(
     window.addEventListener('resize', onResize)
     document.addEventListener('visibilitychange', onVisibilityChange)
     mobileMedia.addEventListener('change', onMediaChange)
+    reducedMotionMedia.addEventListener('change', onMediaChange)
 
     connectMobileObserver()
     scheduleFrame()
@@ -467,6 +491,7 @@ export function useDemoCinematicScroll(
       window.removeEventListener('resize', onResize)
       document.removeEventListener('visibilitychange', onVisibilityChange)
       mobileMedia.removeEventListener('change', onMediaChange)
+      reducedMotionMedia.removeEventListener('change', onMediaChange)
 
       for (const { element } of scenes) {
         element.style.removeProperty('--demo-scene-progress')
