@@ -1,0 +1,50 @@
+.hero-readiness { position: relative; z-index: 3; max-width: 570px; width: 100%; justify-self: end; overflow: hidden; border: 1px solid rgba(255,255,255,.7); border-radius: 14px; background: #f3f0e9; color: #1b211e; box-shadow: 0 30px 90px rgba(0,0,0,.5), 0 0 80px rgba(237,57,46,.05); transform: rotate(1.5deg); }
+.hero-readiness__bar { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 24px; border-bottom: 1px solid #d7d8d0; background: #e8e7df; font-size: .8125rem; }
+.hero-readiness__bar > span:first-child { display: flex; align-items: center; gap: 9px; font-weight: 650; }
+.hero-readiness__bar i { width: 7px; height: 7px; border-radius: 50%; background: #2c7044; }
+.hero-readiness__bar > span:last-child { color: #52594f; }
+.hero-readiness__body { padding: 20px 24px; }
+.hero-readiness__heading > span { display: block; margin-bottom: 9px; color: #596154; font-family: var(--demo-mono); font-size: .8125rem; }
+.hero-readiness__heading h2 { margin: 0; font-family: inherit; font-size: clamp(1.5rem, 2vw, 1.9rem); font-weight: 650; letter-spacing: -.04em; line-height: 1.2; }
+.hero-readiness__heading p { margin: 12px 0 24px; color: #545c53; font-size: .9375rem; line-height: 1.5; }
+.hero-readiness__jobs { margin: 0; padding: 0; list-style: none; }
+.hero-readiness__jobs li { display: grid; grid-template-columns: 48px 1fr; align-items: start; gap: 18px; padding: 15px 0; border-top: 1px solid #d0d4cb; }
+.hero-readiness__jobs li.needs-attention { padding: 15px 14px; margin: 0 -14px 2px; border: 1px solid #d9c99b; border-radius: 8px; background: #faf5e7; }
+.hero-readiness__time { margin-top: 2px; color: #586150; font-family: var(--demo-mono); font-size: .875rem; }
+.hero-readiness__jobs h3 { margin: 0; font-size: 1rem; font-weight: 650; line-height: 1.4; }
+.hero-readiness__jobs p { margin: 4px 0 10px; color: #555d52; font-size: .875rem; line-height: 1.5; }
+.hero-readiness__status { display: inline-flex; align-items: center; gap: 6px; color: #72571e; font-size: .8125rem; font-weight: 600; line-height: 1.4; }
+.hero-readiness__status.is-ready { color: #2e6841; }
+.hero-readiness__status svg { width: 15px; height: 15px; flex: none; }
+.hero-readiness__restock { display: flex; align-items: center; gap: 12px; margin-top: 6px; padding: 12px 16px; border: 1px solid #d0d4cb; border-radius: 8px; background: #e6e9df; }
+.hero-readiness__restock > svg { width: 23px; height: 23px; flex: none; color: #3b4e3a; }
+.hero-readiness__restock strong { display: block; font-size: .9375rem; line-height: 1.5; }
+.hero-readiness__restock span { display: block; margin-top: 3px; color: #545c53; font-size: .875rem; line-height: 1.5; }
+.redesign-page .hero-readiness__link { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; color: #232f26; font-size: .875rem; font-weight: 650; line-height: 1.5; }
+.hero-readiness__link svg { width: 20px; flex: none; transition: transform 180ms ease; }
+.hero-readiness__link:hover svg { transform: translateX(4px); }
+.hero-readiness a:focus-visible { outline-color: #2d4433; }
+.hero-readiness__caption { margin: 0; padding: 10px 24px; border-top: 1px solid #d0d4cb; color: #586150; font-size: .8125rem; line-height: 1.5; }
+
+@media (max-width: 1180px) and (min-width: 821px) {
+  .hero-readiness__body { padding: 22px; }
+  .hero-readiness__jobs li { padding-block: 14px; }
+  .hero-readiness__jobs li.needs-attention { padding-block: 14px; }
+}
+
+@media (max-width: 820px), (max-height: 650px), (hover: none) and (pointer: coarse) {
+  .hero-readiness { max-width: 570px; justify-self: start; transform: none; }
+  .hero-readiness__bar { padding: 15px 20px; }
+  .hero-readiness__body { padding: 22px; }
+  .hero-readiness__jobs li { gap: 12px; padding-block: 15px; }
+  .hero-readiness__caption { padding: 12px 20px; }
+}
+
+@media (max-width: 380px) {
+  .hero-readiness__body { padding: 18px; }
+  .hero-readiness__restock { padding: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-readiness { transform: none; }
+}
