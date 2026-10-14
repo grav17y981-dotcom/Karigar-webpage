@@ -14,7 +14,7 @@ export function BrandMark({ compact = false, inverted = false, className }: Bran
 
   return (
     <span className={classes}>
-      <img src="/assets/karigar-logo.png" alt="Karigar" />
+      <img src="/assets/karigar-logo.webp" alt="Karigar" width="600" height="450" decoding="async" />
     </span>
   )
 }

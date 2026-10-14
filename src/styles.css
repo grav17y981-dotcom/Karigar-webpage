@@ -69,7 +69,7 @@ img, svg { display: block; }
 .brand-mark {
   width: 220px; height: 72px; position: relative; display: block; overflow: hidden; flex: none;
 }
-.brand-mark img { width: 283px; max-width: none; position: absolute; left: -33px; top: -61px; mix-blend-mode: multiply; }
+.brand-mark img { width: 283px; height: auto; max-width: none; position: absolute; left: -33px; top: -61px; mix-blend-mode: multiply; }
 .brand-mark--compact { width: 118px; height: 40px; }
 .brand-mark--compact img { width: 152px; left: -17px; top: -33px; }
 .brand-mark--inverted img { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }

@@ -1,4 +1,4 @@
-# Karigar 3D marketing landing page
+# Karigar marketing landing page
 
 Karigar is an early product concept for independent auto repair shops and body shops. It connects inventory counts, appointment-parts planning, shelf/bin locations, shortage risk, and supplier-grouped restock suggestions in one shop-friendly story.
 
@@ -6,15 +6,14 @@ This repository currently contains the public marketing experience only. It deli
 
 ## What is included
 
-- Airy editorial hero with a floating, illustrated Karigar garage and the screwdriver `i` wordmark
-- Reference-inspired white, ink-black, and copper visual system with oversized serif storytelling
-- Scroll-linked hero camera move that recenters the workbench, moves the copy into the upper-left, and reveals five feature callouts
-- Inertial section reveals, subtle image parallax, hover feedback, and a page-progress indicator
-- Five-stage illustrated workshop that automatically pans, zooms in, zooms out, and advances with page scroll
-- Distinct project-local imagery for the interactive workshop and final parts-counter CTA
-- Product explanation sections for the workshop board, inventory search, appointment parts, storage location, restocking, and activity
-- Independent-shop role benefits and honest beta/trust boundaries
-- Frontend-only waitlist/demo form with accessible validation and a local success state
+- Black-and-red workshop identity with a concise “Parts ready. Bays moving.” hero and the screwdriver `i` wordmark
+- A contrasting sample workshop board in the hero that makes the software and shortage-to-restock connection visible immediately
+- Readable supporting copy, 16px mobile body text, and 13–14px action labels
+- A 1.2-second first-visit opening sequence, a normally scrolling hero, a shorter scroll-linked feature story, and a normally scrolling roadmap
+- Four keyboard-accessible workflow tabs with sample appointment, inventory, restock, and readiness screens
+- Responsive local WebP hero images and a lightweight wordmark image
+- Independent-shop audience and honest concept/pilot boundaries
+- Clearly labeled signup demonstration with accessible validation and a local confirmation; no registration or follow-up email
 - SEO metadata, JSON-LD, sitemap, robots configuration, social preview metadata, and favicon
 - Reduced-motion, responsive, focus, and skip-link support
 
@@ -48,26 +47,26 @@ Open the local URL printed by Vite.
 
 ## Routes and anchors
 
-The site is a single public route (`/`) with section anchors:
+The current experience is available at `/` and `/demo-redesign` (the latter is marked noindex), with section anchors:
 
-- `#workshop` — scroll-driven illustrated workshop demo
-- `#how-it-works` — problem and workflow story
-- `#features` — product feature narrative
-- `#for-shops` — role benefits
-- `#trust` — beta, sample-data, and human-verification notes
-- `#contact` — waitlist/request-demo form
+- `#problem` — four-stage feature story
+- `#how-it-works` — interactive sample product screens
+- `#for-shops` — independent-shop audience
+- `#roadmap` — concept, pilot, and integration phases
+- `#early-access` — planned pilot offer and signup demonstration
 
 ## Motion and performance notes
 
-- The hero and workshop cameras update CSS variables with passive, animation-frame-coordinated scroll listeners rather than re-rendering React on every frame.
-- The workshop changes React state only when the active narrative step changes.
+- The hero and feature story update CSS variables with passive, animation-frame-coordinated scroll listeners rather than re-rendering React on every frame.
+- The feature story changes React state only when the active narrative step changes. Workflow tabs respond to click, tap, Up/Down, Home, and End.
 - `prefers-reduced-motion` disables cinematic motion and moving camera cues.
 - All editorial imagery is project-local; page text, callouts, progress, product screens, and controls remain code-native.
 - The earlier React Three Fiber scene source is preserved in `src/components/GarageScene.tsx`, but it is not loaded by the current landing page.
+- To regenerate the optimized presentation assets, run `python scripts/optimize-presentation-assets.py` in a Python environment with Pillow. Originals remain available for the earlier page and social previews.
 
 ## Lead form behavior
 
-The form validates in the browser and intentionally does not submit or persist data. The integration point is documented in `src/components/LeadForm.tsx`.
+The current form lives in `src/demo/DemoRedesign.tsx`. It validates in the browser and intentionally does not submit or persist data. The offer, submit label, and confirmation all describe a concept demonstration. Pilot registration is not open yet.
 
 A future implementation should use an environment-configured endpoint or trusted form provider, add server-side validation and abuse protection, and publish appropriate privacy/retention terms. Never place API keys or private credentials in client code.
 

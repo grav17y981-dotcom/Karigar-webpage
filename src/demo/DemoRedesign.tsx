@@ -3,6 +3,8 @@ import './demo-redesign.css'
 import { BrandMark } from '../components/BrandMark'
 import { Icon } from '../components/Icons'
 import { useDemoCinematicScroll } from './useDemoCinematicScroll'
+import { WorkflowDemo } from './WorkflowDemo'
+import { HeroReadiness } from './HeroReadiness'
 
 const navItems = [
   { href: '#problem', label: 'What it solves' },
@@ -37,13 +39,6 @@ const services = [
     title: 'Repair readiness',
     text: 'Give the whole team one confident answer: the job is ready, or it is waiting on a specific part.',
   },
-]
-
-const connectedRows = [
-  'The appointment knows the parts.',
-  'Inventory knows the demand.',
-  'Missing parts become a reorder.',
-  'The team knows what is ready.',
 ]
 
 const audiences = [
@@ -295,8 +290,8 @@ function OpeningSequence() {
     } catch {
       // Ignore private-mode storage failures; the intro should still complete.
     }
-    const exitTimer = window.setTimeout(() => setLeaving(true), 1900)
-    const removeTimer = window.setTimeout(() => setVisible(false), 2700)
+    const exitTimer = window.setTimeout(() => setLeaving(true), 800)
+    const removeTimer = window.setTimeout(() => setVisible(false), 1200)
     return () => {
       window.clearTimeout(exitTimer)
       window.clearTimeout(removeTimer)
@@ -391,8 +386,6 @@ function useHeroDepth(heroRef: RefObject<HTMLElement | null>) {
       hero.style.setProperty('--hero-y', `${(currentY * 12).toFixed(2)}px`)
       hero.style.setProperty('--hero-copy-x', `${(currentX * -7).toFixed(2)}px`)
       hero.style.setProperty('--hero-copy-y', `${(currentY * -5).toFixed(2)}px`)
-      hero.style.setProperty('--hero-tilt-x', `${(currentY * -0.7).toFixed(3)}deg`)
-      hero.style.setProperty('--hero-tilt-y', `${(currentX * 0.9).toFixed(3)}deg`)
       if (Math.abs(targetX - currentX) > 0.002 || Math.abs(targetY - currentY) > 0.002) frame = window.requestAnimationFrame(tick)
     }
 
@@ -428,22 +421,27 @@ function CinematicHero() {
   useHeroDepth(heroRef)
 
   return (
-    <section ref={heroRef} className="demo-scroll-scene demo-cinematic-hero demo-hero" id="top" data-demo-scene="top" aria-labelledby="demo-hero-title">
+    <section ref={heroRef} className="demo-cinematic-hero demo-hero" id="top" data-demo-scene="top" aria-labelledby="demo-hero-title">
       <div className="demo-scene__sticky">
         <div className="demo-hero__stage">
-          <img className="demo-hero__background" src="/assets/karigar-workbench-hero.png" alt="Empty automotive workbench with organized tools" width="1536" height="864" fetchPriority="high" />
+          <picture>
+            <source media="(max-width: 820px)" srcSet="/assets/karigar-workbench-hero-mobile.webp" />
+            <img className="demo-hero__background" src="/assets/karigar-workbench-hero.webp" srcSet="/assets/karigar-workbench-hero-medium.webp 1024w, /assets/karigar-workbench-hero.webp 1600w" sizes="108vw" alt="Empty automotive workbench with organized tools" width="1672" height="941" fetchPriority="high" />
+          </picture>
           <div className="demo-hero__grain" />
           <div className="demo-hero__grid" />
           <div className="demo-shell demo-hero__layout">
             <div className="demo-hero__copy">
-              <h1 id="demo-hero-title">Never start a repair without the <strong>parts</strong> ready.</h1>
-              <p>Karigar connects appointments, inventory, and restocking so every repair can begin with confidence.</p>
+              <p className="demo-hero__eyebrow">Parts planning software for independent repair shops</p>
+              <h1 id="demo-hero-title"><strong>Parts ready.</strong><br />Bays moving.</h1>
+              <p>Plan appointments, check stock, and restock missing parts before the vehicle arrives.</p>
               <div className="demo-hero__actions" aria-label="Primary actions">
-                <a href="#problem" onClick={handleAnchorClick}>See the workflow <Icon name="arrow" /></a>
-                <a href="#early-access" onClick={handleAnchorClick}>Join early access</a>
+                <a href="#how-it-works" onClick={handleAnchorClick}>Try the workflow <Icon name="arrow" /></a>
+                <a href="#early-access" onClick={handleAnchorClick}>Pilot details</a>
               </div>
+              <p className="demo-hero__concept">An early product concept, built around independent shops.</p>
             </div>
-            <div className="demo-hero__index" aria-hidden="true"><span>Appointments</span><span>Inventory</span><span>Restocking</span><span>Ready</span></div>
+            <HeroReadiness onExplore={handleAnchorClick} />
           </div>
         </div>
       </div>
@@ -496,39 +494,11 @@ function ServicesStage({ activeService }: { activeService: number }) {
           </figure>
           <figure className="demo-services__image demo-services__image--four" data-demo-flow-object data-demo-flow-axis="x" data-demo-flow-fade="window" data-demo-flow-start="0.7" data-demo-flow-end="0.98" data-demo-flow-travel="210">
             <picture>
-              <img src="/assets/karigar-workbench-hero.png" alt="" width="1672" height="941" loading="lazy" decoding="async" />
+              <img src="/assets/karigar-workbench-hero-medium.webp" alt="" width="1024" height="576" loading="lazy" decoding="async" />
             </picture>
             <figcaption><span>04</span> Repair readiness</figcaption>
           </figure>
         </div>
-      </div>
-    </section>
-  )
-}
-
-function ConnectedStage() {
-  const [activeRow, setActiveRow] = useState(1)
-
-  return (
-    <section className="demo-connected" id="how-it-works" data-demo-scene="how-it-works" aria-labelledby="demo-connected-title">
-      <div className="demo-connected__header demo-shell">
-        <h2 id="demo-connected-title">From booking to <strong>bay-ready.</strong></h2>
-      </div>
-      <div className="demo-connected__rows">
-        {connectedRows.map((row, index) => (
-          <button
-            className={index === activeRow ? 'is-active' : ''}
-            key={row}
-            type="button"
-            aria-pressed={index === activeRow}
-            onMouseEnter={() => setActiveRow(index)}
-            onPointerEnter={() => setActiveRow(index)}
-            onFocus={() => setActiveRow(index)}
-            onClick={() => setActiveRow(index)}
-          >
-            <span>{row}</span><Icon name="arrow" />
-          </button>
-        ))}
       </div>
     </section>
   )
@@ -556,17 +526,17 @@ function AudienceStage() {
 
 function RoadmapStage() {
   return (
-    <section className="demo-scroll-scene demo-roadmap" id="roadmap" data-demo-scene="roadmap" aria-labelledby="demo-roadmap-title">
+    <section className="demo-roadmap" id="roadmap" data-demo-scene="roadmap" aria-labelledby="demo-roadmap-title">
       <div className="demo-scene__sticky">
         <div className="demo-roadmap__texture" aria-hidden="true">
-          <img src="/assets/karigar-garage-editorial.png" alt="" width="1536" height="1024" loading="lazy" decoding="async" />
+          <img src="/assets/karigar-garage-editorial.webp" alt="" width="1280" height="720" loading="lazy" decoding="async" />
         </div>
         <div className="demo-shell demo-roadmap__layout">
           <h2 id="demo-roadmap-title">Built in the open, <strong>with shops.</strong></h2>
           <p>Karigar is an early product concept. We are validating the workflow with repair teams before building deeper integrations.</p>
           <ol>
             {phases.map((phase, index) => (
-              <li key={phase.when} data-demo-flow-object data-demo-flow-start={String(0.1 + index * 0.24)} data-demo-flow-end={String(0.34 + index * 0.24)} data-demo-flow-travel="70">
+              <li key={phase.when}>
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <h3>{phase.when} <strong>{phase.title}</strong></h3>
                 <p>{phase.text}</p>
@@ -625,19 +595,23 @@ function EarlyAccess() {
     <section className="demo-early-access" id="early-access" data-demo-scene="early-access" aria-labelledby="demo-early-title">
       <div className="demo-shell demo-early-access__layout">
         <div className="demo-early-access__copy">
-          <h2 id="demo-early-title">Join <strong>early access.</strong></h2>
-          <p>Help shape a parts-ready workflow built for real repair shops.</p>
+          <h2 id="demo-early-title">Explore <strong>early access.</strong></h2>
+          <p>Help shape a parts-ready workflow built for real repair shops. Our planned pilot will let a small group of shop teams try appointment-parts planning, share feedback, and guide what comes next.</p>
+          <div className="demo-concept-note" id="demo-concept-note">
+            <strong>Explore the signup concept</strong>
+            <p>This demonstration previews the signup experience. Submitting shows a sample confirmation only; it does not register you, save your details, or trigger an email. Pilot registration is not open yet.</p>
+          </div>
         </div>
         <div className="demo-early-access__form-wrap">
           {submitted ? (
             <div className="demo-form-success" role="status" tabIndex={-1} ref={successRef}>
               <span><Icon name="check" /></span>
-              <h3>Thanks &mdash; your interest has been recorded for this demo.</h3>
-              <p>This demo did not send or store your information.</p>
-              <button type="button" onClick={resetForm}>Send another response</button>
+              <h3>Signup preview complete.</h3>
+              <p>No registration was created and no email will be sent. Your details were not sent or saved.</p>
+              <button type="button" onClick={resetForm}>Try the form again</button>
             </div>
           ) : (
-            <form onSubmit={submit} noValidate>
+            <form onSubmit={submit} noValidate aria-describedby="demo-concept-note">
               <label htmlFor="demo-email">Email</label>
               <input id="demo-email" name="email" type="email" autoComplete="email" placeholder="you@workshop.com" value={values.email} onChange={(event) => update('email', event.target.value)} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'demo-email-error' : undefined} ref={emailRef} />
               {errors.email ? <span className="demo-field-error" id="demo-email-error">{errors.email}</span> : null}
@@ -653,8 +627,8 @@ function EarlyAccess() {
               {errors.role ? <span className="demo-field-error" id="demo-role-error">{errors.role}</span> : null}
               <label htmlFor="demo-message">Optional message</label>
               <textarea id="demo-message" name="message" rows={4} maxLength={500} placeholder="Tell us what would make Karigar useful in your shop..." value={values.message} onChange={(event) => update('message', event.target.value)} />
-              <button className="demo-form-submit" type="submit">Join Early Access <Icon name="arrow" /></button>
-              <p className="demo-form-note"><Icon name="shield" /> Demo only &mdash; this form does not send or store your information.</p>
+              <button className="demo-form-submit" type="submit">Preview signup <Icon name="arrow" /></button>
+              <p className="demo-form-note"><Icon name="shield" /> Concept demonstration &mdash; no registration or follow-up email.</p>
             </form>
           )}
         </div>
@@ -670,7 +644,7 @@ function DemoFooter() {
         <div><Wordmark /><p>Parts ready before the appointment begins.</p></div>
         <nav aria-label="Footer navigation">
           {navItems.map((item) => <a key={item.href} href={item.href} onClick={handleAnchorClick}>{item.label}</a>)}
-          <a href="#early-access" onClick={handleAnchorClick}>Join Early Access</a>
+          <a href="#early-access" onClick={handleAnchorClick}>Explore early access</a>
         </nav>
       </div>
       <div className="demo-shell demo-footer__meta"><span>Early product concept</span><span>&copy; {new Date().getFullYear()} Karigar</span></div>
@@ -695,7 +669,7 @@ export default function DemoRedesign() {
       <main id="demo-main" tabIndex={-1}>
         <CinematicHero />
         <ServicesStage activeService={activeWorkflowStep} />
-        <ConnectedStage />
+        <WorkflowDemo />
         <AudienceStage />
         <RoadmapStage />
         <EarlyAccess />
